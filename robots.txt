@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /pagamento.html
+Disallow: /cancella.html
+Disallow: /autentica.html
+Disallow: /grazie.html
+Disallow: /checkin.html
+Disallow: /benvenuti.html
+
+Sitemap: https://appartamentidellamarchesa.it/sitemap.xml

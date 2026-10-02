@@ -825,11 +825,18 @@
     </div>
 
     <div class="calendar-panel">
-      <iframe src="https://calendar.google.com/calendar/embed?src=appartamentidellamarchesa%40gmail.com&ctz=Europe%2FRome&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0"
-        style="border:0; width:100%; height:520px; border-radius:4px;"
-        frameborder="0" scrolling="no"></iframe>
-      <div class="cal-footnote">
-        Calendario collegato direttamente a Google Calendar. Per proteggere la privacy degli ospiti, il calendario è condiviso in modalità "solo libero/occupato": le date prenotate risultano semplicemente come "Occupato", senza nomi né dettagli. Per prenotare, compila il modulo qui sotto.
+      <div class="cal-top">
+        <button class="cal-nav-btn" id="cal-prev" aria-label="Mese precedente">‹</button>
+        <div id="cal-month-label"></div>
+        <button class="cal-nav-btn" id="cal-next" aria-label="Mese successivo">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span><i class="dot available"></i> Disponibile</span>
+        <span><i class="dot booked"></i> Occupato</span>
+      </div>
+      <div class="cal-footnote" id="cal-footnote">
+        Calendario collegato direttamente a Booking.com: le date occupate risultano come "Occupato", senza nomi né dettagli della prenotazione. Per prenotare, compila il modulo qui sotto.
       </div>
     </div>
     <div style="text-align:center; margin-top:26px;">
@@ -1192,6 +1199,103 @@
       el.addEventListener('change', syncContractPreview);
     });
     syncContractPreview();
+  })();
+
+  // ---------- CALENDARIO DISPONIBILITÀ (dati reali da Booking.com) ----------
+  (function(){
+    const grid = document.getElementById('cal-grid');
+    const monthLabel = document.getElementById('cal-month-label');
+    const prevBtn = document.getElementById('cal-prev');
+    const nextBtn = document.getElementById('cal-next');
+    const footnote = document.getElementById('cal-footnote');
+    if(!grid) return;
+
+    const monthNames = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+    const dowNames = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+
+    let viewDate = new Date();
+    viewDate.setDate(1);
+    let busyRanges = []; // [{start:'YYYY-MM-DD', end:'YYYY-MM-DD'}, ...]
+    let loaded = false;
+
+    function isBusy(dateStr){
+      return busyRanges.some(r => dateStr >= r.start && dateStr < r.end);
+      // nota: in iCal la data di fine (DTEND) è esclusiva, cioè è il giorno del check-out
+      // (quindi quel giorno stesso torna libero per un nuovo arrivo)
+    }
+
+    function renderCalendar(){
+      grid.innerHTML = '';
+      dowNames.forEach(n=>{
+        const el = document.createElement('div');
+        el.className = 'dow';
+        el.textContent = n;
+        grid.appendChild(el);
+      });
+
+      const y = viewDate.getFullYear();
+      const m = viewDate.getMonth();
+      monthLabel.textContent = monthNames[m] + ' ' + y;
+
+      const firstDow = (new Date(y, m, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+
+      for(let i=0;i<firstDow;i++){
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
+      }
+
+      const today = new Date();
+      for(let d=1; d<=daysInMonth; d++){
+        const el = document.createElement('div');
+        const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const busy = loaded && isBusy(dateStr);
+        el.className = 'cal-day ' + (loaded ? (busy ? 'booked' : 'available') : '');
+        if(today.getFullYear()===y && today.getMonth()===m && today.getDate()===d){
+          el.className += ' today';
+        }
+        const num = document.createElement('div');
+        num.className = 'num';
+        num.textContent = d;
+        el.appendChild(num);
+        if(loaded){
+          const label = document.createElement('div');
+          label.className = 'price';
+          label.textContent = busy ? 'occupato' : 'libero';
+          el.appendChild(label);
+        }
+        grid.appendChild(el);
+      }
+    }
+
+    async function loadCalendar(){
+      try {
+        const resp = await fetch('/api/calendar');
+        const data = await resp.json();
+        if(!resp.ok){
+          throw new Error(data.error || 'Errore nel caricamento del calendario');
+        }
+        busyRanges = data.busy || [];
+        loaded = true;
+        renderCalendar();
+      } catch(err) {
+        footnote.textContent = 'Al momento non riusciamo a mostrare il calendario aggiornato. Scrivici per verificare la disponibilità: appartamentidellamarchesa@gmail.com';
+        renderCalendar();
+      }
+    }
+
+    prevBtn.addEventListener('click', ()=>{
+      viewDate.setMonth(viewDate.getMonth()-1);
+      renderCalendar();
+    });
+    nextBtn.addEventListener('click', ()=>{
+      viewDate.setMonth(viewDate.getMonth()+1);
+      renderCalendar();
+    });
+
+    renderCalendar();
+    loadCalendar();
   })();
 
   // ---------- LIGHTBOX GALLERY ----------

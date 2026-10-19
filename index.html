@@ -467,6 +467,98 @@
   .discover-card h3{ font-size:1.35rem; margin:0;}
   .discover-card p{ color:var(--ink-soft); font-size:0.92rem; line-height:1.6; margin:0;}
 
+  /* ---------- REVIEWS ---------- */
+  .reviews-summary{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    margin:-14px auto 38px;
+    flex-wrap:wrap;
+    text-align:left;
+  }
+  .reviews-score{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:62px; height:62px;
+    flex-shrink:0;
+    border-radius:50%;
+    background:var(--gold);
+    color:#fff;
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.5rem;
+    font-weight:600;
+    box-shadow:var(--shadow);
+  }
+  .reviews-score-label strong{ display:block; font-size:1.05rem; color:var(--ink); }
+  .reviews-score-label span{ font-family:'Jost', sans-serif; font-size:0.78rem; color:var(--ink-soft); }
+  .reviews-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:22px;
+  }
+  .review-card{
+    background:var(--parchment-card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:26px 24px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .review-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .review-badge{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width:40px; height:40px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#fff;
+    font-family:'Jost', sans-serif;
+    font-weight:600;
+    font-size:0.88rem;
+    padding:0 4px;
+  }
+  .review-who{ font-family:'Jost', sans-serif; font-size:0.78rem; color:var(--ink-soft); line-height:1.4; }
+  .review-who strong{ display:block; color:var(--ink); font-size:0.86rem; font-weight:600; }
+  .review-card h3{ font-size:1.14rem; margin:0; line-height:1.35; }
+  .review-card p{ color:var(--ink-soft); font-size:0.9rem; line-height:1.6; margin:0; }
+  .review-cats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:4px;
+  }
+  .review-cats span{
+    font-family:'Jost', sans-serif;
+    font-size:0.68rem;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    background:var(--parchment-deep);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:3px 10px;
+  }
+  .reviews-source{
+    text-align:center;
+    font-family:'Jost', sans-serif;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    margin-top:28px;
+  }
+  @media (max-width:860px){
+    .reviews-grid{ grid-template-columns:1fr; }
+  }
+
   /* ---------- PROPERTIES COLLECTION ---------- */
   .props-grid{
     display:grid;
@@ -722,6 +814,7 @@
       <li><a href="#appartamento">L'appartamento</a></li>
       <li><a href="#full-gallery">Galleria</a></li>
       <li><a href="#disponibilita">Disponibilità</a></li>
+      <li><a href="#recensioni">Recensioni</a></li>
       <li><a href="#prenota">Prenota</a></li>
       <li><a href="checkin.html">Check-in online</a></li>
       <li><a href="#dintorni">Dintorni</a></li>
@@ -842,6 +935,77 @@
     <div style="text-align:center; margin-top:26px;">
       <a class="cta" href="#prenota">Richiedi la prenotazione</a>
     </div>
+  </div>
+</section>
+
+<section id="recensioni">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Cosa dicono gli ospiti</span>
+      <h2>Recensioni</h2>
+      <p>Le valutazioni e i commenti lasciati dagli ospiti che hanno soggiornato a La Marchesa, raccolti su Booking.com.</p>
+    </div>
+
+    <div class="reviews-summary">
+      <div class="reviews-score">9,7</div>
+      <div class="reviews-score-label">
+        <strong>Eccellente</strong>
+        <span>Media delle recensioni su Booking.com</span>
+      </div>
+    </div>
+
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-top">
+          <div class="review-who"><strong>Ospite</strong>Italia · Ottobre 2026</div>
+          <div class="review-badge">10</div>
+        </div>
+        <h3>Ottimo pernotto di lavoro in un appartamento tranquillo.</h3>
+        <p>Soggiorno di lavoro per la fiera di Montichiari: appartamento pulitissimo, silenzioso e comodissimo per raggiungere il quartiere fieristico in pochi minuti. Check-in autonomo semplice e veloce, tutto esattamente come descritto. Consigliato a chi cerca tranquillità dopo le giornate di lavoro.</p>
+        <div class="review-cats">
+          <span>Staff 10</span>
+          <span>Pulizia 10</span>
+          <span>Posizione 10</span>
+          <span>Servizi 10</span>
+          <span>Comfort 10</span>
+          <span>Qualità/prezzo 10</span>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-top">
+          <div class="review-who"><strong>Ospite</strong>Agosto 2026</div>
+          <div class="review-badge">9,0</div>
+        </div>
+        <h3>Staff, pulizia, servizi, comfort e rapporto qualità/prezzo: 10 su 10.</h3>
+        <p>Soggiorno molto piacevole: appartamento curato nei minimi dettagli, tutto funzionante e pulito al massimo. L'unico aspetto un po' penalizzato è la posizione, non proprio centrale, ma facilmente raggiungibile in auto.</p>
+        <div class="review-cats">
+          <span>Staff 10</span>
+          <span>Pulizia 10</span>
+          <span>Posizione 7,5</span>
+          <span>Servizi 10</span>
+          <span>Comfort 10</span>
+          <span>Qualità/prezzo 10</span>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-top">
+          <div class="review-who"><strong>Ospite</strong>Agosto 2026</div>
+          <div class="review-badge">10</div>
+        </div>
+        <h3>Un soggiorno impeccabile</h3>
+        <p>Appartamento spazioso con due camere da letto, cucina ben attrezzata, bagno pulito e una bella terrazza dove rilassarsi la sera. Il check-in autonomo ha funzionato alla perfezione, senza alcun problema. Un'esperienza impeccabile dall'inizio alla fine.</p>
+        <div class="review-cats">
+          <span>Pulizia 10</span>
+          <span>Comfort 10</span>
+          <span>Letti 10</span>
+          <span>Qualità/prezzo 10</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="reviews-source">Recensioni verificate, raccolte dagli ospiti che hanno prenotato tramite Booking.com.</p>
   </div>
 </section>
 

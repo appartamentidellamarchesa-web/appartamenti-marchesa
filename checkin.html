@@ -222,11 +222,8 @@
 
 <div class="wrap">
 
-  <form class="panel" action="https://formsubmit.co/appartamentidellamarchesa@gmail.com" method="POST" enctype="multipart/form-data" id="checkin-form">
+  <form class="panel" method="POST" enctype="multipart/form-data" id="checkin-form">
 
-    <input type="hidden" name="_subject" value="Dati check-in ospiti — Appartamenti della Marchesa">
-    <input type="hidden" name="_template" value="table">
-    <input type="hidden" name="_next" value="https://appartamentidellamarchesa.it/grazie.html">
     <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
 
     <span class="eyebrow">Soggiorno</span>
@@ -538,7 +535,7 @@
     return `<tr><td class="label">${label}</td><td class="value">${value || '—'}</td></tr>`;
   }
 
-  const MAX_TOTAL_BYTES = 9 * 1024 * 1024; // 9MB, margine di sicurezza sotto il limite di 10MB di FormSubmit
+  const MAX_TOTAL_BYTES = 25 * 1024 * 1024; // 25MB: dopo la conversione in base64 resta sotto il limite di 40MB di Resend
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -553,7 +550,7 @@
       alert(
         'Le foto dei documenti sono troppo pesanti nel loro insieme (circa ' +
         (total / (1024*1024)).toFixed(1) +
-        ' MB, il limite è 9 MB totali) e rischiano di non arrivare. ' +
+        ' MB, il limite è 25 MB totali) e rischiano di non arrivare. ' +
         'Prova ad aprire il link con Safari o Chrome (non da WhatsApp/Instagram) e a riselezionare le foto, oppure scattane di nuove a qualità inferiore.'
       );
       return;
@@ -577,9 +574,13 @@
     try {
       const fd = new FormData(form);
       const resp = await fetch('/api/checkin-submit', { method: 'POST', body: fd });
-      const data = await resp.json();
-      if(!resp.ok || !data.ok){
-        throw new Error(data.error || 'Invio non riuscito');
+      const raw = await resp.text();
+      let data = null;
+      try { data = JSON.parse(raw); } catch(_) {}
+      if(!resp.ok || !data || !data.ok){
+        let msg = (data && data.error) ? data.error : ('risposta inattesa dal server (codice ' + resp.status + ')');
+        if(data && data.detail){ msg += ' [' + String(data.detail).slice(0, 200) + ']'; }
+        throw new Error(msg);
       }
       // Solo a questo punto il server ha confermato che l'email è stata inviata davvero:
       // procediamo alla pagina di ringraziamento.

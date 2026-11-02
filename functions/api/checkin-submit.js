@@ -123,7 +123,7 @@ export async function onRequestPost(context) {
 
     if (!resendResp.ok) {
       const detail = await resendResp.text();
-      return json({ error: 'Invio email non riuscito. Riprova o contattaci direttamente.', detail }, 502);
+      return json({ error: 'Invio email non riuscito (servizio email: codice ' + resendResp.status + ')', detail }, 502);
     }
   } catch (err) {
     return json({ error: 'Errore di connessione al servizio email. Riprova tra poco.', detail: String(err) }, 502);

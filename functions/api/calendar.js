@@ -1,12 +1,13 @@
 // /functions/api/calendar.js
 //
-// Legge DIRETTAMENTE il calendario iCal di Booking.com (lato server) e restituisce
-// solo gli intervalli di date occupate, senza nessun dato sull'ospite (niente nomi,
+// Legge DIRETTAMENTE i calendari iCal di Booking.com e Airbnb (lato server), li unisce
+// e restituisce solo gli intervalli di date occupate, senza nessun dato sull'ospite (niente nomi,
 // niente dettagli prenotazione) — esattamente come richiesto per la privacy.
 //
-// Variabile d'ambiente richiesta:
-//   BOOKING_ICAL_URL -> il link iCal che trovi nell'extranet Booking.com
-//                       (Tariffe e disponibilità > Calendario > Sincronizza i calendari > Esporta calendario)
+// Variabili d'ambiente (almeno una delle due):
+//   BOOKING_ICAL_URL -> il link iCal dell'extranet Booking.com
+//   AIRBNB_ICAL_URL  -> il link iCal di Airbnb (Calendario > Disponibilità > Sincronizza calendari > Esporta)
+//                       contiene un codice segreto: va salvato come Secret su Cloudflare, mai nel codice
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -82,23 +83,41 @@ export async function onRequestOptions() {
   });
 }
 
+async function fetchFeed(name, url) {
+  const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (calendar-sync)' } });
+  if (!resp.ok) throw new Error(`${name}: HTTP ${resp.status}`);
+  return parseICalEvents(await resp.text());
+}
+
 export async function onRequestGet(context) {
   const { env } = context;
 
-  if (!env.BOOKING_ICAL_URL) {
-    return json({ error: 'Configurazione mancante (BOOKING_ICAL_URL).' }, 500);
+  // Calendari da unire: ognuno è opzionale, ma ne serve almeno uno.
+  const feeds = [
+    ['Booking.com', env.BOOKING_ICAL_URL],
+    ['Airbnb', env.AIRBNB_ICAL_URL],
+  ].filter(([, url]) => url);
+
+  if (feeds.length === 0) {
+    return json({ error: 'Configurazione mancante (BOOKING_ICAL_URL / AIRBNB_ICAL_URL).' }, 500);
   }
 
-  try {
-    const resp = await fetch(env.BOOKING_ICAL_URL);
-    if (!resp.ok) {
-      return json({ error: 'Impossibile leggere il calendario Booking.com in questo momento.' }, 502);
-    }
-    const icalText = await resp.text();
-    const events = parseICalEvents(icalText);
+  const results = await Promise.allSettled(feeds.map(([name, url]) => fetchFeed(name, url)));
 
-    return json({ busy: events, updatedAt: new Date().toISOString() });
-  } catch (err) {
-    return json({ error: 'Errore nel recupero del calendario', detail: String(err) }, 502);
+  const busy = [];
+  const failed = [];
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') busy.push(...r.value);
+    else failed.push(feeds[i][0]);
+  });
+
+  if (failed.length === feeds.length) {
+    return json({ error: 'Impossibile leggere i calendari in questo momento.' }, 502);
   }
+
+  // Se un solo calendario non risponde mostriamo comunque l'altro, ma segnaliamo
+  // il problema e non lo teniamo in cache a lungo.
+  const body = { busy, updatedAt: new Date().toISOString() };
+  if (failed.length) body.warning = 'Calendario non raggiungibile: ' + failed.join(', ');
+  return json(body, 200);
 }
